@@ -3,327 +3,1732 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>💰 Finanças Pro 2025</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>💰 Controle Financeiro 2025</title>
     <style>
-        /* [Seu CSS anterior mantido e otimizado] */
-        :root {
-            --primary: #2563eb; --primary-hover: #1d4ed8; --success: #10b981;
-            --danger: #ef4444; --warning: #f59e0b; --bg: #f8fafc;
-            --card: #ffffff; --border: #e2e8f0; --text: #1e293b; --shadow: 0 1px 3px rgba(0,0,0,0.1);
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); }
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        .header { background: white; padding: 20px; border-radius: 12px; box-shadow: var(--shadow); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 20px; }
-        .stat-card { background: white; padding: 20px; border-radius: 12px; box-shadow: var(--shadow); border-left: 4px solid var(--primary); }
-        .stat-card.income { border-left-color: var(--success); }
-        .stat-card.expense { border-left-color: var(--danger); }
-        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: var(--shadow); margin-bottom: 20px; }
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .chart-container { position: relative; height: 300px; width: 100%; }
+
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --border: #e2e8f0;
+            --text: #1e293b;
+            --muted: #64748b;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: var(--primary);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .connection-status.online {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .connection-status.offline {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .connection-status .indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .pending-sync {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: #fffbeb;
+            color: var(--warning);
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .pending-sync.show {
+            display: flex;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-weight: 500;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            max-width: 400px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success { background: #d1fae5; color: #065f46; }
+        .notification.danger { background: #fee2e2; color: #991b1b; }
+        .notification.warning { background: #fef3c7; color: #92400e; }
+        .notification.info { background: #dbeafe; color: #1e40af; }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            background: white;
+            padding: 10px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            border: none;
+            background: transparent;
+            color: var(--muted);
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .tab:hover {
+            background: var(--bg);
+        }
+
+        .tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--text);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        .stat-card.success {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .stat-card.danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .stat-card.warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        .stat-label {
+            font-size: 13px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border 0.2s;
+            font-family: inherit;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        button.primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        button.primary:hover {
+            background: var(--primary-hover);
+        }
+
+        button.secondary {
+            background: var(--border);
+            color: var(--text);
+        }
+
+        button.secondary:hover {
+            background: #cbd5e1;
+        }
+
+        button.success {
+            background: var(--success);
+            color: white;
+        }
+
+        button.danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        button.small {
+            padding: 6px 12px;
+            font-size: 13px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+
+        th {
+            background: var(--bg);
+            padding: 12px;
+            text-align: left;
+            font-weight: 700;
+            font-size: 13px;
+            text-transform: uppercase;
+            color: var(--muted);
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        tr:hover {
+            background: var(--bg);
+        }
+
+        .pending-row {
+            background: #fffbeb;
+        }
+
+        .pill {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .pill.Recebimento {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .pill.Compra, .pill.Pagamento {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .pill.FII {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .pill.Acao {
+            background: #fce7f3;
+            color: #9f1239;
+        }
+
+        .pill.Fiagro {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .pill.Renda.Fixa, .pill.RendaFixa {
+            background: #ddd6fe;
+            color: #5b21b6;
+        }
         
-        /* Tabs e Formatação */
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; background: white; padding: 10px; border-radius: 12px; overflow-x: auto; }
-        .tab { padding: 10px 20px; border: none; background: none; cursor: pointer; font-weight: 600; border-radius: 8px; color: var(--text); }
-        .tab.active { background: var(--primary); color: white; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+        .pill.Dividendos {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .pill.Aluguel {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .pill.Juros {
+            background: #fef3c7;
+            color: #92400e;
+        }
         
-        input, select, textarea { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid var(--border); border-radius: 6px; }
-        button { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.2s; }
-        button.primary { background: var(--primary); color: white; }
-        button.success { background: var(--success); color: white; }
-        button.danger { background: var(--danger); color: white; }
+        .pill.Salario {
+            background: #fce7f3;
+            color: #9f1239;
+        }
+
+        .pill.Freelance {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
-        .pill { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+        .pill.Outro {
+            background: #e5e7eb;
+            color: #4b5563;
+        }
+
+        .pill.Mensal {
+            background: #ddd6fe;
+            color: #5b21b6;
+        }
+
+        .pill.Trimestral {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+
+        .pill.Semestral {
+            background: #d1fae5;
+            color: #065f46;
+        }
         
-        @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
+        .pill.Anual {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .investment-item {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            transition: all 0.2s;
+        }
+
+        .investment-item:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
+        }
+
+        .investment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .investment-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .investment-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .investment-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .investment-detail {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .detail-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--muted);
+            letter-spacing: 0.5px;
+        }
+
+        .detail-value {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--muted);
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state-text {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .empty-state-subtext {
+            font-size: 14px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .stat-value {
+                font-size: 22px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 13px;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+        }
     </style>
 </head>
 <body>
+    <script>
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyF3gqZooSeT0rwSHLlz5dbHxmcgzPHXNhJM5Cith6HCXPSz_El40N6vgUM7khJxK3Pxw/exec';
+    </script>
+
+    <div class="notification" id="notification">
+        <span id="notificationText"></span>
+    </div>
+
     <div class="container">
         <div class="header">
-            <h1>💰 Finanças 2025</h1>
-            <div id="syncStatus">☁️ Sincronizado</div>
+            <h1>💰 Controle Financeiro 2025</h1>
+            <div class="header-actions">
+                <div class="connection-status online" id="connectionStatus">
+                    <div class="indicator"></div>
+                    <span id="statusText">Conectado</span>
+                </div>
+                <div class="pending-sync" id="pendingSync">
+                    ⏳ <span id="pendingCount">0</span> pendentes
+                </div>
+                <button class="small success" id="btnManualSync" style="display:none;">
+                    🔄 Sincronizar
+                </button>
+                <button class="small secondary" id="btnTestConnection">
+                    🔌 Testar Conexão
+                </button>
+            </div>
         </div>
 
         <div class="tabs">
-            <button class="tab active" onclick="switchTab('dash')">📊 Dash</button>
-            <button class="tab" onclick="switchTab('tx')">💸 Transações</button>
-            <button class="tab" onclick="switchTab('inv')">📈 Ativos</button>
-            <button class="tab" onclick="switchTab('rec')">📅 Rendas</button>
+            <button class="tab active" data-tab="dashboard">📊 Dashboard</button>
+            <button class="tab" data-tab="transactions">💸 Transações</button>
+            <button class="tab" data-tab="investments">📈 Investimentos</button>
+            <button class="tab" data-tab="recurring">💰 Rendas</button>
         </div>
 
-        <div id="dash" class="tab-content active">
+        <div id="dashboard" class="tab-content active">
             <div class="stats-grid">
-                <div class="stat-card income"><small>Receita Total</small><h2 id="d-in">R$ 0,00</h2></div>
-                <div class="stat-card expense"><small>Despesa Total</small><h2 id="d-out">R$ 0,00</h2></div>
-                <div class="stat-card"><small>Patrimônio Investido</small><h2 id="d-inv">R$ 0,00</h2></div>
-            </div>
-            <div class="grid-2">
-                <div class="card">
-                    <h3>Gastos por Categoria</h3>
-                    <div class="chart-container"><canvas id="catChart"></canvas></div>
+                <div class="stat-card success">
+                    <div class="stat-label">💵 Total Recebido (Geral)</div>
+                    <div class="stat-value" id="dashTxIn">R$ 0,00</div>
                 </div>
-                <div class="card">
-                    <h3>Composição da Carteira</h3>
-                    <div class="chart-container"><canvas id="invChart"></canvas></div>
+                <div class="stat-card danger">
+                    <div class="stat-label">💳 Total Gasto (Geral)</div>
+                    <div class="stat-value" id="dashTxOut">R$ 0,00</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">💰 Saldo (Total)</div>
+                    <div class="stat-value" id="dashTxBalance">R$ 0,00</div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-label">📈 Patrimônio Investido</div>
+                    <div class="stat-value" id="dashInvTotal">R$ 0,00</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📊 Resumo Completo</div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">🎯 Ativos na Carteira</div>
+                        <div class="stat-value" id="dashInvCount">0</div>
+                    </div>
+                    <div class="stat-card success">
+                        <div class="stat-label">💸 Renda Passiva/Mês (Proj.)</div>
+                        <div class="stat-value" id="dashRecMonthly">R$ 0,00</div>
+                    </div>
+                    <div class="stat-card warning">
+                        <div class="stat-label">📅 Renda Passiva/Ano (Proj.)</div>
+                        <div class="stat-value" id="dashRecYearly">R$ 0,00</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">💡 Insights Financeiros</div>
+                <div id="insights">
+                    <p style="color:var(--muted);">Adicione transações, investimentos e rendas para ver insights personalizados.</p>
                 </div>
             </div>
         </div>
 
-        <div id="tx" class="tab-content">
+        <div id="transactions" class="tab-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">📝 Total de Transações</div>
+                    <div class="stat-value" id="statTotal">0</div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-label">💵 Recebido (Mês Atual)</div>
+                    <div class="stat-value" id="statReceived">R$ 0,00</div>
+                </div>
+                <div class="stat-card danger">
+                    <div class="stat-label">💳 Gasto (Mês Atual)</div>
+                    <div class="stat-value" id="statSpent">R$ 0,00</div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-label">💰 Saldo (Mês Atual)</div>
+                    <div class="stat-value" id="statBalance">R$ 0,00</div>
+                </div>
+            </div>
+
             <div class="card">
-                <h3>Nova Transação</h3>
-                <form id="txForm" onsubmit="handleForm(event, 'transactions')">
-                    <input type="hidden" id="tx_id">
-                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
-                        <select id="tx_tipo"><option value="Recebimento">Recebimento</option><option value="Compra">Compra</option></select>
-                        <input type="number" id="tx_valor" step="0.01" placeholder="Valor" required>
-                        <input type="datetime-local" id="tx_datahora">
+                <div class="card-title">➕ Nova Transação</div>
+                <form id="transactionForm">
+                    <input type="hidden" id="txId">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Tipo *</label>
+                            <select id="txType" required>
+                                <option value="Recebimento">💵 Recebimento</option>
+                                <option value="Compra">🛒 Compra</option>
+                                <option value="Pagamento">💳 Pagamento</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Valor (R$) *</label>
+                            <input type="number" id="txAmount" step="0.01" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Data e Hora *</label>
+                            <input type="datetime-local" id="txDatetime" required>
+                        </div>
                     </div>
-                    <input type="text" id="tx_descricao" placeholder="Descrição" required>
-                    <input type="text" id="tx_categoria" placeholder="Categoria (Ex: Alimentação)">
-                    <button type="submit" class="primary">Salvar</button>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Descrição *</label>
+                            <input type="text" id="txDescription" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Categoria</label>
+                            <input type="text" id="txCategory" placeholder="Ex: Alimentação, Transporte...">
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <button type="submit" class="primary">💾 Salvar</button>
+                        <button type="button" class="secondary" id="btnTxClear">🗑️ Limpar</button>
+                    </div>
                 </form>
             </div>
+
             <div class="card">
-                <input type="text" id="txSearch" onkeyup="filterTable('txTable', 2)" placeholder="Filtrar por descrição...">
-                <table id="txTable">
-                    <thead><tr><th>Data</th><th>Cat.</th><th>Descrição</th><th>Valor</th><th>Ações</th></tr></thead>
-                    <tbody id="txBody"></tbody>
-                </table>
+                <div class="card-title">🔍 Filtros</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Buscar</label>
+                        <input type="text" id="txSearch" placeholder="Descrição ou categoria...">
+                    </div>
+                    <div class="form-group">
+                        <label>Data Inicial</label>
+                        <input type="date" id="txFromDate">
+                    </div>
+                    <div class="form-group">
+                        <label>Data Final</label>
+                        <input type="date" id="txToDate">
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button class="primary" id="btnTxSearch">🔎 Filtrar</button>
+                    <button class="secondary" id="btnTxToday">📅 Hoje</button>
+                    <button class="secondary" id="btnTxMonth">📆 Mês Atual</button>
+                    <button class="secondary" id="btnTxRefresh">🔄 Limpar Filtros</button>
+                    <button class="success" id="btnTxExport">📊 Exportar CSV</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📋 Histórico de Transações</div>
+                <div id="txEmptyState"></div>
+                <div id="txList">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Data/Hora</th>
+                                <th>Tipo</th>
+                                <th>Descrição</th>
+                                <th>Valor</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="txTable"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
-        <div id="inv" class="tab-content">
-            <div class="card">
-                <h3>Novo Ativo</h3>
-                <form id="invForm" onsubmit="handleForm(event, 'investments')">
-                    <input type="hidden" id="inv_id">
-                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:10px;">
-    <input type="text" id="inv_nome" placeholder="Ticker" required>
-    <input type="number" id="inv_quantidade" placeholder="Qtd">
-    <input type="number" id="inv_precomedio" step="0.01" placeholder="Preço Médio">
-    <input type="number" id="inv_proventos" step="0.01" placeholder="Proventos Acum.">
-</div>
+        <div id="investments" class="tab-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">💼 Total Investido</div>
+                    <div class="stat-value" id="statInvTotal">R$ 0,00</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">🏢 FIIs</div>
+                    <div class="stat-value" id="statFII">R$ 0,00</div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-label">📈 Fiagro + Ações</div>
+                    <div class="stat-value" id="statFiagroAcoes">R$ 0,00</div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-label">💰 Renda Fixa</div>
+                    <div class="stat-value" id="statRendaFixa">R$ 0,00</div>
+                </div>
+            </div>
 
-<div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-    <input type="number" id="rec_valor" step="0.01" placeholder="Valor Estimado" required>
-    <select id="rec_frequencia">
-        <option value="Diario">Diário</option>
-        <option value="Mensal" selected>Mensal</option>
-        <option value="180 dias">180 dias</option>
-        <option value="Anual">Anual</option>
-    </select>
-</div>
-<select id="rec_tipo">
-    <option value="Salario">Salário</option>
-    <option value="Dividendos">Dividendos</option>
-    <option value="Aluguel">Aluguel</option>
-    <option value="Outros">Outros</option>
-</select>
+            <div class="card">
+                <div class="card-title">➕ Novo Investimento</div>
+                <form id="investmentForm">
+                    <input type="hidden" id="invId">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Tipo *</label>
+                            <select id="invType" required>
+                                <option value="FII">🏢 FII</option>
+                                <option value="Acao">📈 Ação</option>
+                                <option value="Fiagro">🌾 Fiagro</option>
+                                <option value="Renda Fixa">💰 Renda Fixa</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Nome/Ticker *</label>
+                            <input type="text" id="invName" required placeholder="Ex: MXRF11, PETR4...">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Quantidade *</label>
+                            <input type="number" id="invQuantity" step="1" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Preço Médio (R$) *</label>
+                            <input type="number" id="invPrice" step="0.01" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Total Investido</label>
+                            <input type="text" id="invTotal" readonly>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Data da Compra *</label>
+                            <input type="date" id="invDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Notas</label>
+                            <input type="text" id="invNotes" placeholder="Observações...">
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <button type="submit" class="primary">💾 Salvar</button>
+                        <button type="button" class="secondary" id="btnInvClear">🗑️ Limpar</button>
+                    </div>
                 </form>
             </div>
-            <div id="invList"></div>
+
+            <div class="card">
+                <div class="card-title">📊 Minha Carteira</div>
+                <div id="invEmptyState"></div>
+                <div id="invList"></div>
+            </div>
         </div>
 
-        <div id="rec" class="tab-content">
+        <div id="recurring" class="tab-content">
+            <div class="stats-grid">
+                <div class="stat-card success">
+                    <div class="stat-label">💸 Renda Mensal (Projeção)</div>
+                    <div class="stat-value" id="statRecMonthly">R$ 0,00</div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-label">📅 Renda Anual (Projeção)</div>
+                    <div class="stat-value" id="statRecYearly">R$ 0,00</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">🎯 Total de Fontes</div>
+                    <div class="stat-value" id="statRecCount">0</div>
+                </div>
+            </div>
+
             <div class="card">
-                <h3>Cadastrar Renda Recorrente</h3>
-                <form id="recForm" onsubmit="handleForm(event, 'recurring')">
-                    <input type="hidden" id="rec_id">
-                    <input type="text" id="rec_nome" placeholder="Nome da Fonte (Ex: Salário)" required>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                        <input type="number" id="rec_valor" step="0.01" placeholder="Valor Estimado" required>
-                        <select id="rec_frequencia"><option value="Mensal">Mensal</option><option value="Trimestral">Trimestral</option><option value="Anual">Anual</option></select>
+                <div class="card-title">➕ Nova Renda Recorrente</div>
+                <form id="recurringForm">
+                    <input type="hidden" id="recId">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Nome *</label>
+                            <input type="text" id="recName" required placeholder="Ex: Dividendos MXRF11">
+                        </div>
+                        <div class="form-group">
+                            <label>Tipo *</label>
+                            <select id="recType" required>
+                                <option value="Dividendos">💰 Dividendos</option>
+                                <option value="Aluguel">🏠 Aluguel</option>
+                                <option value="Juros">💵 Juros</option>
+                                <option value="Salario">💼 Salário</option>
+                                <option value="Freelance">💻 Freelance</option>
+                                <option value="Outro">📝 Outro</option>
+                            </select>
+                        </div>
                     </div>
-                    <select id="rec_tipo"><option value="Salario">Salário</option><option value="Dividendos">Dividendos</option><option value="Aluguel">Aluguel</option></select>
-                    <input type="date" id="rec_proximopagamento">
-                    <textarea id="rec_notas" placeholder="Notas..."></textarea>
-                    <button type="submit" class="success">Salvar Renda</button>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Valor (R$) *</label>
+                            <input type="number" id="recAmount" step="0.01" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Frequência *</label>
+                            <select id="recFrequency" required>
+                                <option value="Mensal">📅 Mensal</option>
+                                <option value="Trimestral">📆 Trimestral</option>
+                                <option value="Semestral">🗓️ Semestral</option>
+                                <option value="Anual">📋 Anual</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Próximo Pagamento *</label>
+                            <input type="date" id="recNextDate" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Notas</label>
+                        <textarea id="recNotes" placeholder="Observações sobre esta renda..."></textarea>
+                    </div>
+                    <div class="btn-group">
+                        <button type="submit" class="primary">💾 Salvar</button>
+                        <button type="button" class="secondary" id="btnRecClear">🗑️ Limpar</button>
+                    </div>
                 </form>
             </div>
-            <div id="recList"></div>
+
+            <div class="card">
+                <div class="card-title">💰 Minhas Fontes de Renda</div>
+                <div id="recEmptyState"></div>
+                <div id="recList"></div>
+            </div>
         </div>
     </div>
 
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzSBg1XxoAUN2bxNEpE3NT5esvh4JzT4z83kcIriKFPs6GygmacXfH8AJqmXTW9sUwh/exec';
-        let db = { transactions: [], investments: [], recurring: [] };
-        let catChart, invChart;
+        // ============================================
+        // CONFIGURAÇÕES E VARIÁVEIS GLOBAIS
+        // ============================================
+        
+        const STORAGE_TRANSACTIONS = 'financeTransactions_v2';
+        const STORAGE_INVESTMENTS = 'financeInvestments_v2';
+        const STORAGE_RECURRING = 'financeRecurring_v2';
+        const STORAGE_PENDING = 'financePending_v2';
+        const SYNC_INTERVAL = 30000;
+        const fmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 
-        // Inicialização
-        window.onload = () => {
-            loadLocal();
+        const notification = document.getElementById('notification');
+        const notificationText = document.getElementById('notificationText');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const statusText = document.getElementById('statusText');
+        const pendingSync = document.getElementById('pendingSync');
+        const pendingCount = document.getElementById('pendingCount');
+        const btnManualSync = document.getElementById('btnManualSync');
+        const txTableBody = document.querySelector('#txTable');
+
+        let isOnline = navigator.onLine;
+        let transactions = [];
+        let investments = [];
+        let recurring = [];
+        let pendingOperations = [];
+        let currentTab = 'dashboard';
+
+        function init() {
+            loadFromLocalStorage();
+            updateConnectionStatus();
+            setupTabs();
+            setupTransactions();
+            setupInvestments();
+            setupRecurring();
             renderAll();
-            sync();
-            document.getElementById('tx_datahora').value = new Date().toISOString().slice(0, 16);
-        };
-
-        function switchTab(id) {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            event.target.classList.add('active');
-            if(id === 'dash') updateCharts();
+            updateDashboard();
+            window.addEventListener('online', handleOnline);
+            window.addEventListener('offline', handleOffline);
+            setInterval(autoSync, SYNC_INTERVAL);
+            if (isOnline) syncWithServer();
         }
 
-        // --- CORE: Salvar Dados ---
-        async function handleForm(e, collection) {
-            e.preventDefault();
-            const form = e.target;
-            const prefix = form.id.replace('Form', '');
-            
-            const item = {
-                id: document.getElementById(`${prefix}_id`).value || Date.now().toString(),
-            };
-
-            // Mapeia todos os inputs do form para o objeto
-            Array.from(form.elements).forEach(el => {
-                if(el.id && el.id.includes('_')) {
-                    const key = el.id.split('_')[1];
-                    item[key] = el.type === 'number' ? parseFloat(el.value) : el.value;
-                }
+        function setupTabs() {
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    tab.classList.add('active');
+                    const tabId = tab.dataset.tab;
+                    document.getElementById(tabId).classList.add('active');
+                    currentTab = tabId;
+                    if (tabId === 'dashboard') updateDashboard();
+                });
             });
+        }
 
-            // Lógica de valor negativo para compras
-            if(collection === 'transactions' && item.tipo === 'Compra') item.valor = -Math.abs(item.valor);
-
-            const existingIdx = db[collection].findIndex(i => i.id == item.id);
-            if(existingIdx > -1) db[collection][existingIdx] = item;
-            else db[collection].push(item);
-
-            saveLocal();
-            renderAll();
-            form.reset();
-            document.getElementById(`${prefix}_id`).value = '';
-
+        function loadFromLocalStorage() {
             try {
-                const action = existingIdx > -1 ? `edit${collection.slice(0,-1).charAt(0).toUpperCase() + collection.slice(1,-1)}` : `create${collection.slice(0,-1).charAt(0).toUpperCase() + collection.slice(1,-1)}`;
-                await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action, payload: item }) });
-                document.getElementById('syncStatus').innerText = '☁️ Sincronizado';
-            } catch (e) {
-                document.getElementById('syncStatus').innerText = '⚠️ Local apenas';
+                transactions = JSON.parse(localStorage.getItem(STORAGE_TRANSACTIONS) || '[]');
+                investments = JSON.parse(localStorage.getItem(STORAGE_INVESTMENTS) || '[]');
+                recurring = JSON.parse(localStorage.getItem(STORAGE_RECURRING) || '[]');
+                pendingOperations = JSON.parse(localStorage.getItem(STORAGE_PENDING) || '[]');
+                updatePendingIndicator();
+            } catch (err) {
+                console.error('Erro ao carregar dados:', err);
             }
         }
 
-        // --- RENDERIZAÇÃO ---
-        function renderAll() {
-            renderTransactions();
-            renderInvestments();
-            renderRecurring();
-            updateStats();
-            updateCharts();
+        function saveToLocalStorage() {
+            try {
+                localStorage.setItem(STORAGE_TRANSACTIONS, JSON.stringify(transactions));
+                localStorage.setItem(STORAGE_INVESTMENTS, JSON.stringify(investments));
+                localStorage.setItem(STORAGE_RECURRING, JSON.stringify(recurring));
+                localStorage.setItem(STORAGE_PENDING, JSON.stringify(pendingOperations));
+            } catch (err) {
+                console.error('Erro ao salvar dados:', err);
+                showNotification('⚠️ Erro ao salvar localmente', 'warning');
+            }
         }
 
-        function renderTransactions() {
-            const body = document.getElementById('txBody');
-            body.innerHTML = db.transactions.map(t => `
-                <tr>
-                    <td><small>${new Date(t.datahora).toLocaleDateString()}</small></td>
-                    <td><span class="pill">${t.categoria || 'Geral'}</span></td>
-                    <td>${t.descricao}</td>
-                    <td style="color:${t.valor > 0 ? 'green':'red'}"><b>${formatBRL(t.valor)}</b></td>
-                    <td><button onclick="deleteItem('transactions', '${t.id}')">🗑️</button></td>
-                </tr>
-            `).join('');
+        function updateConnectionStatus() {
+            isOnline = navigator.onLine;
+            if (isOnline) {
+                connectionStatus.classList.remove('offline');
+                connectionStatus.classList.add('online');
+                statusText.textContent = 'Conectado';
+                btnManualSync.style.display = pendingOperations.length > 0 ? 'inline-flex' : 'none';
+            } else {
+                connectionStatus.classList.remove('online');
+                connectionStatus.classList.add('offline');
+                statusText.textContent = 'Offline';
+                btnManualSync.style.display = 'none';
+            }
+        }
+
+        function handleOnline() {
+            isOnline = true;
+            updateConnectionStatus();
+            showNotification('✅ Conexão restaurada! Sincronizando...', 'success');
+            syncWithServer();
+        }
+
+        function handleOffline() {
+            isOnline = false;
+            updateConnectionStatus();
+            showNotification('⚠️ Offline. Dados salvos localmente.', 'warning');
+        }
+
+        function updatePendingIndicator() {
+            const count = pendingOperations.length;
+            pendingCount.textContent = count;
+            if (count > 0) {
+                pendingSync.classList.add('show');
+                btnManualSync.style.display = isOnline ? 'inline-flex' : 'none';
+            } else {
+                pendingSync.classList.remove('show');
+                btnManualSync.style.display = 'none';
+            }
+        }
+
+        async function api(action, payload = {}, isRetry = false) {
+            if (!isOnline && !isRetry) {
+                throw new Error('offline');
+            }
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000);
+                const res = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify({ action, payload }),
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const json = await res.json();
+                if (!json.success) throw new Error(json.error || 'Erro desconhecido do servidor');
+                return json;
+            } catch (err) {
+                console.error('Erro na API:', err);
+                if (err.name === 'AbortError') {
+                    throw new Error('Timeout');
+                }
+                throw err;
+            }
+        }
+
+        async function syncWithServer() {
+            if (!isOnline) return;
+            try {
+                if (pendingOperations.length > 0) {
+                    await processPendingOperations();
+                }
+                const serverData = await api('listAll', {});
+
+                transactions = serverData.transactions || [];
+                investments = serverData.investments || [];
+                recurring = serverData.recurring || [];
+
+                saveToLocalStorage();
+                renderAll();
+                updateDashboard();
+                showNotification('✅ Sincronizado com o Google Sheets!', 'success');
+
+            } catch (err) {
+                console.error('Erro na sincronização:', err);
+                if (err.message !== 'offline') {
+                    showNotification('⚠️ Erro ao sincronizar: ' + err.message, 'warning');
+                }
+            }
+        }
+
+        async function processPendingOperations() {
+            const operations = [...pendingOperations];
+            const processedIds = [];
+            for (const op of operations) {
+                try {
+                    const result = await api(op.action, op.payload, true);
+                    if (result.success) {
+                        processedIds.push(op.id);
+                    }
+                } catch (err) {
+                    console.error('Erro ao processar operação pendente:', op.action, err);
+                }
+            }
+            pendingOperations = pendingOperations.filter(op => !processedIds.includes(op.id));
+            saveToLocalStorage();
+            updatePendingIndicator();
+        }
+
+        function autoSync() {
+            if (isOnline && pendingOperations.length > 0) {
+                syncWithServer();
+            }
+        }
+
+        btnManualSync.addEventListener('click', syncWithServer);
+
+        document.getElementById('btnTestConnection').addEventListener('click', async () => {
+            showNotification('🔄 Testando conexão com Apps Script...', 'info');
+            try {
+                const result = await api('listAll', {});
+                showNotification(`✅ Conexão OK! Transações: ${result.transactions?.length || 0}, Investimentos: ${result.investments?.length || 0}, Rendas: ${result.recurring?.length || 0}`, 'success');
+            } catch (err) {
+                showNotification('❌ Erro de Conexão: ' + err.message, 'danger');
+                console.error('Erro detalhado:', err);
+            }
+        });
+
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
+
+        function escapeHtml(text) {
+            if (typeof text !== 'string') return '';
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        function capitalize(s) {
+            return s.charAt(0).toUpperCase() + s.slice(1);
+        }
+
+        function showNotification(message, type = 'info') {
+            notificationText.textContent = message;
+            notification.className = `notification show ${type}`;
+            setTimeout(() => notification.classList.remove('show'), 5000);
+        }
+
+        async function addData(collection, data) {
+            const action = `create${capitalize(collection).slice(0, -1)}`;
+            
+            data.id = generateId();
+            const collectionArray = getCollectionArray(collection);
+            collectionArray.push(data);
+
+            pendingOperations.push({ action, payload: data, collection, id: data.id });
+            
+            saveToLocalStorage();
+            renderAll();
+            updateDashboard();
+            updatePendingIndicator();
+
+            showNotification('💾 Salvo localmente. Sincronizando...', 'info');
+
+            try {
+                const result = await api(action, data);
+                if (result.success) {
+                    pendingOperations = pendingOperations.filter(op => op.id !== data.id || op.action !== action);
+                    saveToLocalStorage();
+                    updatePendingIndicator();
+                    showNotification('✅ Salvo e sincronizado com sucesso!', 'success');
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (err) {
+                if (err.message !== 'offline') {
+                    showNotification('⚠️ Erro ao sincronizar. Adicionado aos pendentes.', 'warning');
+                }
+            }
+        }
+
+        async function editData(collection, id, updatedData) {
+            const action = `edit${capitalize(collection).slice(0, -1)}`;
+            const collectionArray = getCollectionArray(collection);
+            const index = collectionArray.findIndex(item => item.id === id);
+            
+            if (index === -1) return;
+
+            collectionArray[index] = { ...collectionArray[index], ...updatedData, id };
+            
+            pendingOperations = pendingOperations.filter(op => op.id !== id || op.action.startsWith('delete'));
+            pendingOperations.push({ action, payload: collectionArray[index], collection, id });
+
+            saveToLocalStorage();
+            renderAll();
+            updateDashboard();
+            updatePendingIndicator();
+            showNotification('🔄 Editado localmente. Sincronizando...', 'info');
+
+            try {
+                const result = await api(action, collectionArray[index]);
+                if (result.success) {
+                    pendingOperations = pendingOperations.filter(op => op.id !== id || op.action !== action);
+                    saveToLocalStorage();
+                    updatePendingIndicator();
+                    showNotification('✅ Editado e sincronizado com sucesso!', 'success');
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (err) {
+                if (err.message !== 'offline') {
+                    showNotification('⚠️ Erro ao sincronizar edição. Adicionado aos pendentes.', 'warning');
+                }
+            }
+        }
+
+        async function deleteData(collection, id) {
+            if (!confirm('Tem certeza que deseja excluir este registro? Esta ação será sincronizada!')) return;
+            
+            const action = `delete${capitalize(collection).slice(0, -1)}`;
+            const collectionArray = getCollectionArray(collection);
+            const index = collectionArray.findIndex(item => item.id === id);
+            
+            if (index === -1) return;
+
+            collectionArray.splice(index, 1);
+
+            pendingOperations = pendingOperations.filter(op => op.id !== id);
+            pendingOperations.push({ action, payload: { id }, collection, id });
+
+            saveToLocalStorage();
+            renderAll();
+            updateDashboard();
+            updatePendingIndicator();
+            showNotification('🗑️ Excluído localmente. Sincronizando...', 'info');
+
+            try {
+                const result = await api(action, { id });
+                if (result.success) {
+                    pendingOperations = pendingOperations.filter(op => op.id !== id || op.action !== action);
+                    saveToLocalStorage();
+                    updatePendingIndicator();
+                    showNotification('✅ Excluído e sincronizado com sucesso!', 'success');
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (err) {
+                if (err.message !== 'offline') {
+                    showNotification('⚠️ Erro ao sincronizar exclusão. Adicionado aos pendentes.', 'warning');
+                }
+            }
+        }
+
+        function getCollectionArray(collection) {
+            if (collection === 'transactions') return transactions;
+            if (collection === 'investments') return investments;
+            if (collection === 'recurring') return recurring;
+            return [];
+        }
+
+        function getPendingStatus(id, actionPrefix) {
+            return pendingOperations.some(op => op.id === id && op.action.startsWith(actionPrefix));
+        }
+
+        function renderAll() {
+            renderTransactionStats();
+            renderTransactions();
+            renderInvestmentStats();
+            renderInvestments();
+            renderRecurringStats();
+            renderRecurring();
+        }
+
+        function calculateMonthlyStats(list) {
+            const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
+            const endOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString().split('T')[0];
+
+            const currentMonthTxs = list.filter(t => {
+                const txDate = t.datahora.split('T')[0];
+                return txDate >= startOfMonth && txDate <= endOfMonth;
+            });
+
+            const received = currentMonthTxs.filter(t => t.valor > 0).reduce((sum, t) => sum + t.valor, 0);
+            const spent = currentMonthTxs.filter(t => t.valor <= 0).reduce((sum, t) => sum + Math.abs(t.valor), 0);
+            const balance = received - spent;
+            
+            return { received, spent, balance };
+        }
+        
+        function getEmptyState(targetId, icon, title, subtitle) {
+            document.getElementById(targetId).innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">${icon}</div>
+                    <div class="empty-state-text">${title}</div>
+                    <div class="empty-state-subtext">${subtitle}</div>
+                </div>
+            `;
+        }
+        
+        // DASHBOARD
+        function updateDashboard() {
+            // Transações
+            const totalReceived = transactions.filter(t => t.valor > 0).reduce((sum, t) => sum + t.valor, 0);
+            const totalSpent = transactions.filter(t => t.valor <= 0).reduce((sum, t) => sum + Math.abs(t.valor), 0);
+            const totalBalance = totalReceived - totalSpent;
+            
+            document.getElementById('dashTxIn').textContent = fmt.format(totalReceived);
+            document.getElementById('dashTxOut').textContent = fmt.format(totalSpent);
+            document.getElementById('dashTxBalance').textContent = fmt.format(totalBalance);
+
+            // Investimentos
+            const totalInvested = investments.reduce((sum, inv) => sum + (inv.quantidade * inv.precomedio), 0);
+            const investmentCount = investments.length;
+            
+            document.getElementById('dashInvTotal').textContent = fmt.format(totalInvested);
+            document.getElementById('dashInvCount').textContent = investmentCount;
+
+            // Rendas Recorrentes
+            const { monthly, yearly } = calculateRecurringProjection(recurring);
+
+            document.getElementById('dashRecMonthly').textContent = fmt.format(monthly);
+            document.getElementById('dashRecYearly').textContent = fmt.format(yearly);
+
+            // Insights
+            const insightsDiv = document.getElementById('insights');
+            let insightHtml = '';
+            
+            if (totalBalance < 0) {
+                insightHtml += `<p style="color:var(--danger); margin-bottom: 8px;">🛑 **Atenção:** Seu saldo total está negativo em ${fmt.format(totalBalance)}. Analise suas despesas!</p>`;
+            } else if (totalBalance > 0 && totalInvested > 0) {
+                 insightHtml += `<p style="color:var(--success); margin-bottom: 8px;">🎉 **Excelente!** Você tem um saldo positivo de ${fmt.format(totalBalance)} e um patrimônio investido de ${fmt.format(totalInvested)}.</p>`;
+            }
+
+            if (monthly > 0) {
+                insightHtml += `<p style="color:var(--primary);">🎯 Sua renda passiva projetada é de ${fmt.format(monthly)}/mês. Continue aumentando!</p>`;
+            } else {
+                insightHtml += `<p style="color:var(--muted);">💡 **Dica:** Comece a registrar suas fontes de renda recorrente para visualizar sua renda passiva.</p>`;
+            }
+            
+            insightsDiv.innerHTML = insightHtml || '<p style="color:var(--muted);">Adicione transações, investimentos e rendas para ver insights personalizados.</p>';
+        }
+
+        // TRANSAÇÕES
+        function renderTransactionStats() {
+            const { received, spent, balance } = calculateMonthlyStats(transactions);
+            
+            document.getElementById('statTotal').textContent = transactions.length;
+            document.getElementById('statReceived').textContent = fmt.format(received);
+            document.getElementById('statSpent').textContent = fmt.format(spent);
+            document.getElementById('statBalance').textContent = fmt.format(balance);
+        }
+
+        function renderTransactions(filteredList = transactions) {
+            const tbody = txTableBody;
+            tbody.innerHTML = '';
+            document.getElementById('txEmptyState').innerHTML = '';
+
+            if (filteredList.length === 0) {
+                getEmptyState('txEmptyState', '💸', 'Nenhuma transação encontrada.', 'Tente ajustar o filtro ou adicione um novo movimento.');
+                return;
+            }
+
+            filteredList.sort((a, b) => new Date(b.datahora) - new Date(a.datahora)).forEach(tx => {
+                const date = new Date(tx.datahora).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+                const value = fmt.format(Math.abs(tx.valor));
+                const isPending = getPendingStatus(tx.id, 'create') || getPendingStatus(tx.id, 'edit');
+                const isDeleted = getPendingStatus(tx.id, 'delete');
+                
+                if (isDeleted) return;
+                
+                const row = tbody.insertRow();
+                if (isPending) row.classList.add('pending-row');
+                
+                row.innerHTML = `
+                    <td>${date}</td>
+                    <td><span class="pill ${tx.tipo}">${escapeHtml(tx.tipo)}</span></td>
+                    <td>
+                        ${escapeHtml(tx.descricao)} <br>
+                        <span style="font-size:12px; color:var(--muted)">${escapeHtml(tx.categoria || '')}</span>
+                    </td>
+                    <td style="color:${tx.valor >= 0 ? 'var(--success)' : 'var(--danger)'}; font-weight:700">${value}</td>
+                    <td class="actions">
+                        <button class="small secondary" onclick="editTransaction('${tx.id}')" title="Editar">✏️</button>
+                        <button class="small danger" onclick="deleteData('transactions', '${tx.id}')" title="Excluir">🗑️</button>
+                    </td>
+                `;
+            });
+        }
+
+        function setupTransactions() {
+            document.getElementById('transactionForm').addEventListener('submit', handleTransactionSubmit);
+            document.getElementById('btnTxClear').addEventListener('click', clearTransactionForm);
+            document.getElementById('btnTxSearch').addEventListener('click', () => filterTransactions());
+            document.getElementById('btnTxRefresh').addEventListener('click', () => { 
+                clearTransactionForm();
+                document.getElementById('txFromDate').value = '';
+                document.getElementById('txToDate').value = '';
+                document.getElementById('txSearch').value = '';
+                renderTransactions(); 
+            });
+            document.getElementById('btnTxToday').addEventListener('click', () => filterTransactions('today'));
+            document.getElementById('btnTxMonth').addEventListener('click', () => filterTransactions('month'));
+            document.getElementById('btnTxExport').addEventListener('click', exportTransactions);
+            
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = (now.getMonth() + 1).toString().padStart(2, '0');
+            const day = now.getDate().toString().padStart(2, '0');
+            const hour = now.getHours().toString().padStart(2, '0');
+            const minute = now.getMinutes().toString().padStart(2, '0');
+            document.getElementById('txDatetime').value = `${year}-${month}-${day}T${hour}:${minute}`;
+        }
+
+        function clearTransactionForm() {
+            document.getElementById('transactionForm').reset();
+            document.getElementById('txId').value = '';
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = (now.getMonth() + 1).toString().padStart(2, '0');
+            const day = now.getDate().toString().padStart(2, '0');
+            const hour = now.getHours().toString().padStart(2, '0');
+            const minute = now.getMinutes().toString().padStart(2, '0');
+            document.getElementById('txDatetime').value = `${year}-${month}-${day}T${hour}:${minute}`;
+        }
+
+        function editTransaction(id) {
+            const tx = transactions.find(t => t.id === id);
+            if (!tx) return;
+            
+            document.getElementById('txId').value = tx.id;
+            document.getElementById('txType').value = tx.tipo;
+            document.getElementById('txDescription').value = tx.descricao;
+            document.getElementById('txAmount').value = Math.abs(tx.valor);
+            document.getElementById('txCategory').value = tx.categoria;
+            
+            if (tx.datahora) {
+                const date = new Date(tx.datahora);
+                const localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+                document.getElementById('txDatetime').value = localDate;
+            }
+            showNotification(`✏️ Editando transação: ${tx.descricao}`, 'info');
+        }
+
+        function handleTransactionSubmit(e) {
+            e.preventDefault();
+            
+            const id = document.getElementById('txId').value;
+            const tipo = document.getElementById('txType').value;
+            const rawAmount = parseFloat(document.getElementById('txAmount').value);
+            const descricao = document.getElementById('txDescription').value;
+            const categoria = document.getElementById('txCategory').value;
+            const datahora = document.getElementById('txDatetime').value || new Date().toISOString().slice(0, 16);
+
+            const valor = (tipo === 'Compra' || tipo === 'Pagamento') ? -Math.abs(rawAmount) : Math.abs(rawAmount);
+
+            const data = { tipo, descricao, valor, categoria, datahora };
+            
+            if (id) {
+                editData('transactions', id, data);
+            } else {
+                addData('transactions', data);
+            }
+            clearTransactionForm();
+        }
+
+        function filterTransactions(period) {
+            let fromDate = document.getElementById('txFromDate').value;
+            let toDate = document.getElementById('txToDate').value;
+            const search = document.getElementById('txSearch').value.toLowerCase();
+            const now = new Date();
+
+            if (period === 'today') {
+                fromDate = now.toISOString().split('T')[0];
+                toDate = now.toISOString().split('T')[0];
+                document.getElementById('txFromDate').value = fromDate;
+                document.getElementById('txToDate').value = toDate;
+            } else if (period === 'month') {
+                const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+                const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+                fromDate = firstDay.toISOString().split('T')[0];
+                toDate = lastDay.toISOString().split('T')[0];
+                document.getElementById('txFromDate').value = fromDate;
+                document.getElementById('txToDate').value = toDate;
+            }
+
+            const filtered = transactions.filter(tx => {
+                const txDate = tx.datahora.split('T')[0];
+                const matchesSearch = !search || tx.descricao.toLowerCase().includes(search) || tx.categoria.toLowerCase().includes(search);
+                const matchesDate = (!fromDate || txDate >= fromDate) && (!toDate || txDate <= toDate);
+                return matchesSearch && matchesDate;
+            });
+
+            renderTransactions(filtered);
+            showNotification(`🔎 ${filtered.length} transações encontradas.`, 'info');
+        }
+
+        function exportTransactions() {
+            const headers = ['DataHora', 'Tipo', 'Descricao', 'Valor', 'Categoria'];
+            const csv = [
+                headers.join(';'),
+                ...transactions.map(tx => headers.map(h => {
+                    let value = tx[h.toLowerCase()] || '';
+                    if (h === 'Valor') return (tx.valor).toFixed(2).replace('.', ',');
+                    if (h === 'DataHora') return value.replace('T', ' ');
+                    if (typeof value === 'string') return `"${value.replace(/"/g, '""')}"`;
+                    return value;
+                }).join(';'))
+            ].join('\n');
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'transacoes_financeiras.csv';
+            link.click();
+            showNotification('📊 Transações exportadas para CSV!', 'success');
+        }
+
+        // INVESTIMENTOS
+        function renderInvestmentStats() {
+            const totalInvested = investments.reduce((sum, inv) => sum + (inv.quantidade * inv.precomedio), 0);
+            const totalFii = investments.filter(inv => inv.tipo === 'FII').reduce((sum, inv) => sum + (inv.quantidade * inv.precomedio), 0);
+            const totalFiagroAcoes = investments.filter(inv => inv.tipo === 'Fiagro' || inv.tipo === 'Acao').reduce((sum, inv) => sum + (inv.quantidade * inv.precomedio), 0);
+            const totalRendaFixa = investments.filter(inv => inv.tipo === 'Renda Fixa').reduce((sum, inv) => sum + (inv.quantidade * inv.precomedio), 0);
+
+            document.getElementById('statInvTotal').textContent = fmt.format(totalInvested);
+            document.getElementById('statFII').textContent = fmt.format(totalFii);
+            document.getElementById('statFiagroAcoes').textContent = fmt.format(totalFiagroAcoes);
+            document.getElementById('statRendaFixa').textContent = fmt.format(totalRendaFixa);
         }
 
         function renderInvestments() {
-            const container = document.getElementById('invList');
-            container.innerHTML = db.investments.map(i => `
-                <div class="card" style="display:flex; justify-content:space-between; align-items:center">
-                    <div><b>${i.nome}</b> <span class="pill">${i.tipo}</span><br><small>${i.quantidade} un x ${formatBRL(i.precomedio)}</small></div>
-                    <div><b>${formatBRL(i.quantidade * i.precomedio)}</b></div>
-                    <button onclick="deleteItem('investments', '${i.id}')" class="danger">🗑️</button>
-                </div>
-            `).join('');
+            const listDiv = document.getElementById('invList');
+            listDiv.innerHTML = '';
+            document.getElementById('invEmptyState').innerHTML = '';
+
+            if (investments.length === 0) {
+                getEmptyState('invEmptyState', '💼', 'Nenhum investimento na carteira.', 'Adicione seus ativos para acompanhar.');
+                return;
+            }
+
+            investments.sort((a, b) => (b.quantidade * b.precomedio) - (a.quantidade * a.precomedio)).forEach(inv => {
+                const total = inv.quantidade * inv.precomedio;
+                const isPending = getPendingStatus(inv.id, 'create') || getPendingStatus(inv.id, 'edit');
+                const isDeleted = getPendingStatus(inv.id, 'delete');
+                
+                if (isDeleted) return;
+                
+                const statusPill = isPending ? `<span class="pill" style="background:#fffbeb;color:var(--warning)">⏳ Pendente</span>` : '';
+                
+                const itemHtml = `
+                    <div class="investment-item" data-id="${inv.id}">
+                        <div class="investment-header">
+                            <div style="display:flex; flex-direction:column; align-items:flex-start;">
+                                <div class="investment-name">${escapeHtml(inv.nome)} ${statusPill}</div>
+                                <span class="pill ${inv.tipo.replace(/\s/g, '')}" style="margin-top:4px;">${escapeHtml(inv.tipo)}</span>
+                            </div>
+                            <div class="investment-value">${fmt.format(total)}</div>
+                        </div>
+                        <div class="investment-details">
+                            <div class="investment-detail"><span class="detail-label">QTD.</span><span class="detail-value">${inv.quantidade.toFixed(0)}</span></div>
+                            <div class="investment-detail"><span class="detail-label">PREÇO MÉDIO</span><span class="detail-value">${fmt.format(inv.precomedio)}</span></div>
+                            <div class="investment-detail"><span class="detail-label">DATA COMPRA</span><span class="detail-value">${inv.datacompra}</span></div>
+                            <div class="investment-detail"><span class="detail-label">NOTAS</span><span class="detail-value">${escapeHtml(inv.notas.substring(0, 30) || 'N/A')}</span></div>
+                        </div>
+                        <div class="btn-group" style="margin-top:16px; justify-content: flex-end;">
+                            <button class="small secondary" onclick="editInvestment('${inv.id}')">✏️ Editar</button>
+                            <button class="small danger" onclick="deleteData('investments', '${inv.id}')">🗑️ Excluir</button>
+                        </div>
+                    </div>
+                `;
+                listDiv.insertAdjacentHTML('beforeend', itemHtml);
+            });
+        }
+
+        function setupInvestments() {
+            document.getElementById('investmentForm').addEventListener('submit', handleInvestmentSubmit);
+            document.getElementById('btnInvClear').addEventListener('click', clearInvestmentForm);
+            document.getElementById('invQuantity').addEventListener('input', calculateInvTotal);
+            document.getElementById('invPrice').addEventListener('input', calculateInvTotal);
+            
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('invDate').value = today;
+        }
+
+        function calculateInvTotal() {
+            const qty = parseFloat(document.getElementById('invQuantity').value) || 0;
+            const price = parseFloat(document.getElementById('invPrice').value) || 0;
+            const total = qty * price;
+            document.getElementById('invTotal').value = fmt.format(total);
+        }
+
+        function clearInvestmentForm() {
+            document.getElementById('investmentForm').reset();
+            document.getElementById('invId').value = '';
+            document.getElementById('invTotal').value = '';
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('invDate').value = today;
+        }
+
+        function editInvestment(id) {
+            const inv = investments.find(i => i.id === id);
+            if (!inv) return;
+
+            document.getElementById('invId').value = inv.id;
+            document.getElementById('invType').value = inv.tipo;
+            document.getElementById('invName').value = inv.nome;
+            document.getElementById('invQuantity').value = inv.quantidade;
+            document.getElementById('invPrice').value = inv.precomedio;
+            document.getElementById('invDate').value = inv.datacompra;
+            document.getElementById('invNotes').value = inv.notas;
+            
+            calculateInvTotal();
+            showNotification(`✏️ Editando ativo: ${inv.nome}`, 'info');
+        }
+
+        function handleInvestmentSubmit(e) {
+            e.preventDefault();
+            
+            const id = document.getElementById('invId').value;
+            const tipo = document.getElementById('invType').value;
+            const nome = document.getElementById('invName').value;
+            const quantidade = parseFloat(document.getElementById('invQuantity').value);
+            const precomedio = parseFloat(document.getElementById('invPrice').value);
+            const datacompra = document.getElementById('invDate').value;
+            const notas = document.getElementById('invNotes').value;
+
+            const data = { tipo, nome, quantidade, precomedio, datacompra, notas };
+            
+            if (id) {
+                editData('investments', id, data);
+            } else {
+                addData('investments', data);
+            }
+            clearInvestmentForm();
+        }
+
+        // RENDAS RECORRENTES
+        function calculateRecurringProjection(list) {
+            let monthly = 0;
+            list.forEach(rec => {
+                const value = rec.valor || 0;
+                if (rec.frequencia === 'Mensal') monthly += value;
+                else if (rec.frequencia === 'Trimestral') monthly += value / 3;
+                else if (rec.frequencia === 'Semestral') monthly += value / 6;
+                else if (rec.frequencia === 'Anual') monthly += value / 12;
+            });
+            return { monthly, yearly: monthly * 12 };
+        }
+
+        function renderRecurringStats() {
+            const { monthly, yearly } = calculateRecurringProjection(recurring);
+            
+            document.getElementById('statRecMonthly').textContent = fmt.format(monthly);
+            document.getElementById('statRecYearly').textContent = fmt.format(yearly);
+            document.getElementById('statRecCount').textContent = recurring.length;
         }
 
         function renderRecurring() {
-            const container = document.getElementById('recList');
-            container.innerHTML = db.recurring.map(r => `
-                <div class="card" style="border-left: 4px solid #10b981">
-                    <div style="display:flex; justify-content:space-between">
-                        <b>${r.nome}</b>
-                        <span style="color:green"><b>${formatBRL(r.valor)}</b></span>
-                    </div>
-                    <small>Frequência: ${r.frequencia} | Próximo: ${r.proximopagamento}</small>
-                    <div style="text-align:right; margin-top:10px">
-                        <button onclick="deleteItem('recurring', '${r.id}')" class="danger" style="padding:4px 8px">Excluir</button>
-                    </div>
-                </div>
-            `).join('');
-        }
+            const listDiv = document.getElementById('recList');
+            listDiv.innerHTML = '';
+            document.getElementById('recEmptyState').innerHTML = '';
 
-        // --- GRÁFICOS ---
-
-        function updateCharts() {
-            const txCats = {};
-            db.transactions.filter(t => t.valor < 0).forEach(t => {
-                const cat = t.categoria || 'Outros';
-                txCats[cat] = (txCats[cat] || 0) + Math.abs(t.valor);
-            });
-
-            if(catChart) catChart.destroy();
-            catChart = new Chart(document.getElementById('catChart'), {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(txCats),
-                    datasets: [{ data: Object.values(txCats), backgroundColor: ['#ef4444', '#f59e0b', '#2563eb', '#10b981', '#8b5cf6'] }]
-                }
-            });
-        }
-
-        // --- AUXILIARES ---
-        function formatBRL(v) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v); }
-        
-        function saveLocal() { localStorage.setItem('fin_db', JSON.stringify(db)); }
-        function loadLocal() { const saved = localStorage.getItem('fin_db'); if(saved) db = JSON.parse(saved); }
-
-        function updateStats() {
-            const inc = db.transactions.filter(t => t.valor > 0).reduce((s, t) => s + t.valor, 0);
-            const out = db.transactions.filter(t => t.valor < 0).reduce((s, t) => s + t.valor, 0);
-            const inv = db.investments.reduce((s, i) => s + (i.quantidade * i.precomedio), 0);
-            document.getElementById('d-in').innerText = formatBRL(inc);
-            document.getElementById('d-out').innerText = formatBRL(Math.abs(out));
-            document.getElementById('d-inv').innerText = formatBRL(inv);
-        }
-
-        async function sync() {
-            try {
-                const resp = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'listAll' }) });
-                const data = await resp.json();
-                if(data.success) {
-                    db = data;
-                    saveLocal();
-                    renderAll();
-                }
-            } catch(e) {}
-        }
-
-        function filterTable(tableId, colIdx) {
-            const input = event.target.value.toLowerCase();
-            const rows = document.getElementById(tableId).getElementsByTagName('tr');
-            for(let i = 1; i < rows.length; i++) {
-                const text = rows[i].getElementsByTagName('td')[colIdx].innerText.toLowerCase();
-                rows[i].style.display = text.includes(input) ? '' : 'none';
+            if (recurring.length === 0) {
+                getEmptyState('recEmptyState', '💸', 'Nenhuma renda recorrente cadastrada.', 'Registre suas fontes de renda passiva/recorrente.');
+                return;
             }
+            
+            recurring.sort((a, b) => (new Date(a.proximopagamento) - new Date(b.proximopagamento))).forEach(rec => {
+                const { monthly } = calculateRecurringProjection([rec]);
+                const isPending = getPendingStatus(rec.id, 'create') || getPendingStatus(rec.id, 'edit');
+                const isDeleted = getPendingStatus(rec.id, 'delete');
+                
+                if (isDeleted) return;
+
+                const statusPill = isPending ? `<span class="pill" style="background:#fffbeb;color:var(--warning)">⏳ Pendente</span>` : '';
+                
+                const itemHtml = `
+                    <div class="investment-item" data-id="${rec.id}">
+                        <div class="investment-header">
+                            <div style="display:flex; flex-direction:column; align-items:flex-start;">
+                                <div class="investment-name">${escapeHtml(rec.nome)} ${statusPill}</div>
+                                <span class="pill ${rec.tipo}">${escapeHtml(rec.tipo)}</span>
+                            </div>
+                            <div class="investment-value" style="color:var(--success);">${fmt.format(rec.valor)}</div>
+                        </div>
+                        <div class="investment-details">
+                            <div class="investment-detail"><span class="detail-label">FREQUÊNCIA</span><span class="detail-value"><span class="pill ${rec.frequencia}">${escapeHtml(rec.frequencia)}</span></span></div>
+                            <div class="investment-detail"><span class="detail-label">PROJ. MENSAL</span><span class="detail-value">${fmt.format(monthly)}</span></div>
+                            <div class="investment-detail"><span class="detail-label">PRÓX. PAGAMENTO</span><span class="detail-value">${rec.proximopagamento}</span></div>
+                            <div class="investment-detail"><span class="detail-label">NOTAS</span><span class="detail-value">${escapeHtml(rec.notas.substring(0, 30) || 'N/A')}</span></div>
+                        </div>
+                        <div class="btn-group" style="margin-top:16px; justify-content: flex-end;">
+                            <button class="small secondary" onclick="editRecurring('${rec.id}')">✏️ Editar</button>
+                            <button class="small danger" onclick="deleteData('recurring', '${rec.id}')">🗑️ Excluir</button>
+                        </div>
+                    </div>
+                `;
+                listDiv.insertAdjacentHTML('beforeend', itemHtml);
+            });
         }
 
-        async function deleteItem(collection, id) {
-            if(!confirm('Excluir?')) return;
-            db[collection] = db[collection].filter(i => i.id != id);
-            saveLocal();
-            renderAll();
-            const action = `delete${collection.slice(0,-1).charAt(0).toUpperCase() + collection.slice(1,-1)}`;
-            await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action, payload: {id} }) });
+        function setupRecurring() {
+            document.getElementById('recurringForm').addEventListener('submit', handleRecurringSubmit);
+            document.getElementById('btnRecClear').addEventListener('click', clearRecurringForm);
+            
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('recNextDate').value = today;
         }
+
+        function clearRecurringForm() {
+            document.getElementById('recurringForm').reset();
+            document.getElementById('recId').value = '';
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('recNextDate').value = today;
+        }
+
+        function editRecurring(id) {
+            const rec = recurring.find(r => r.id === id);
+            if (!rec) return;
+
+            document.getElementById('recId').value = rec.id;
+            document.getElementById('recName').value = rec.nome;
+            document.getElementById('recType').value = rec.tipo;
+            document.getElementById('recAmount').value = rec.valor;
+            document.getElementById('recFrequency').value = rec.frequencia;
+            document.getElementById('recNextDate').value = rec.proximopagamento;
+            document.getElementById('recNotes').value = rec.notas;
+            
+            showNotification(`✏️ Editando renda: ${rec.nome}`, 'info');
+        }
+
+        function handleRecurringSubmit(e) {
+            e.preventDefault();
+            
+            const id = document.getElementById('recId').value;
+            const nome = document.getElementById('recName').value;
+            const tipo = document.getElementById('recType').value;
+            const valor = parseFloat(document.getElementById('recAmount').value);
+            const frequencia = document.getElementById('recFrequency').value;
+            const proximopagamento = document.getElementById('recNextDate').value;
+            const notas = document.getElementById('recNotes').value;
+
+            const data = { nome, tipo, valor, frequencia, proximopagamento, notas };
+            
+            if (id) {
+                editData('recurring', id, data);
+            } else {
+                addData('recurring', data);
+            }
+            clearRecurringForm();
+        }
+
+        init();
     </script>
 </body>
 </html>
