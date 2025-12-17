@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💰 Finanças Pro 2025</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* [Seu CSS anterior mantido e otimizado] */
+        :root {
+            --primary: #2563eb; --primary-hover: #1d4ed8; --success: #10b981;
+            --danger: #ef4444; --warning: #f59e0b; --bg: #f8fafc;
+            --card: #ffffff; --border: #e2e8f0; --text: #1e293b; --shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .header { background: white; padding: 20px; border-radius: 12px; box-shadow: var(--shadow); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 20px; }
+        .stat-card { background: white; padding: 20px; border-radius: 12px; box-shadow: var(--shadow); border-left: 4px solid var(--primary); }
+        .stat-card.income { border-left-color: var(--success); }
+        .stat-card.expense { border-left-color: var(--danger); }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: var(--shadow); margin-bottom: 20px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .chart-container { position: relative; height: 300px; width: 100%; }
+        
+        /* Tabs e Formatação */
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; background: white; padding: 10px; border-radius: 12px; overflow-x: auto; }
+        .tab { padding: 10px 20px; border: none; background: none; cursor: pointer; font-weight: 600; border-radius: 8px; color: var(--text); }
+        .tab.active { background: var(--primary); color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        input, select, textarea { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid var(--border); border-radius: 6px; }
+        button { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+        button.primary { background: var(--primary); color: white; }
+        button.success { background: var(--success); color: white; }
+        button.danger { background: var(--danger); color: white; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
+        .pill { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+        
+        @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💰 Finanças 2025</h1>
+            <div id="syncStatus">☁️ Sincronizado</div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('dash')">📊 Dash</button>
+            <button class="tab" onclick="switchTab('tx')">💸 Transações</button>
+            <button class="tab" onclick="switchTab('inv')">📈 Ativos</button>
+            <button class="tab" onclick="switchTab('rec')">📅 Rendas</button>
+        </div>
+
+        <div id="dash" class="tab-content active">
+            <div class="stats-grid">
+                <div class="stat-card income"><small>Receita Total</small><h2 id="d-in">R$ 0,00</h2></div>
+                <div class="stat-card expense"><small>Despesa Total</small><h2 id="d-out">R$ 0,00</h2></div>
+                <div class="stat-card"><small>Patrimônio Investido</small><h2 id="d-inv">R$ 0,00</h2></div>
+            </div>
+            <div class="grid-2">
+                <div class="card">
+                    <h3>Gastos por Categoria</h3>
+                    <div class="chart-container"><canvas id="catChart"></canvas></div>
+                </div>
+                <div class="card">
+                    <h3>Composição da Carteira</h3>
+                    <div class="chart-container"><canvas id="invChart"></canvas></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tx" class="tab-content">
+            <div class="card">
+                <h3>Nova Transação</h3>
+                <form id="txForm" onsubmit="handleForm(event, 'transactions')">
+                    <input type="hidden" id="tx_id">
+                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
+                        <select id="tx_tipo"><option value="Recebimento">Recebimento</option><option value="Compra">Compra</option></select>
+                        <input type="number" id="tx_valor" step="0.01" placeholder="Valor" required>
+                        <input type="datetime-local" id="tx_datahora">
+                    </div>
+                    <input type="text" id="tx_descricao" placeholder="Descrição" required>
+                    <input type="text" id="tx_categoria" placeholder="Categoria (Ex: Alimentação)">
+                    <button type="submit" class="primary">Salvar</button>
+                </form>
+            </div>
+            <div class="card">
+                <input type="text" id="txSearch" onkeyup="filterTable('txTable', 2)" placeholder="Filtrar por descrição...">
+                <table id="txTable">
+                    <thead><tr><th>Data</th><th>Cat.</th><th>Descrição</th><th>Valor</th><th>Ações</th></tr></thead>
+                    <tbody id="txBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="inv" class="tab-content">
+            <div class="card">
+                <h3>Novo Ativo</h3>
+                <form id="invForm" onsubmit="handleForm(event, 'investments')">
+                    <input type="hidden" id="inv_id">
+                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:10px;">
+    <input type="text" id="inv_nome" placeholder="Ticker" required>
+    <input type="number" id="inv_quantidade" placeholder="Qtd">
+    <input type="number" id="inv_precomedio" step="0.01" placeholder="Preço Médio">
+    <input type="number" id="inv_proventos" step="0.01" placeholder="Proventos Acum.">
+</div>
+
+<div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+    <input type="number" id="rec_valor" step="0.01" placeholder="Valor Estimado" required>
+    <select id="rec_frequencia">
+        <option value="Diario">Diário</option>
+        <option value="Mensal" selected>Mensal</option>
+        <option value="180 dias">180 dias</option>
+        <option value="Anual">Anual</option>
+    </select>
+</div>
+<select id="rec_tipo">
+    <option value="Salario">Salário</option>
+    <option value="Dividendos">Dividendos</option>
+    <option value="Aluguel">Aluguel</option>
+    <option value="Outros">Outros</option>
+</select>
+                </form>
+            </div>
+            <div id="invList"></div>
+        </div>
+
+        <div id="rec" class="tab-content">
+            <div class="card">
+                <h3>Cadastrar Renda Recorrente</h3>
+                <form id="recForm" onsubmit="handleForm(event, 'recurring')">
+                    <input type="hidden" id="rec_id">
+                    <input type="text" id="rec_nome" placeholder="Nome da Fonte (Ex: Salário)" required>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                        <input type="number" id="rec_valor" step="0.01" placeholder="Valor Estimado" required>
+                        <select id="rec_frequencia"><option value="Mensal">Mensal</option><option value="Trimestral">Trimestral</option><option value="Anual">Anual</option></select>
+                    </div>
+                    <select id="rec_tipo"><option value="Salario">Salário</option><option value="Dividendos">Dividendos</option><option value="Aluguel">Aluguel</option></select>
+                    <input type="date" id="rec_proximopagamento">
+                    <textarea id="rec_notas" placeholder="Notas..."></textarea>
+                    <button type="submit" class="success">Salvar Renda</button>
+                </form>
+            </div>
+            <div id="recList"></div>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzSBg1XxoAUN2bxNEpE3NT5esvh4JzT4z83kcIriKFPs6GygmacXfH8AJqmXTW9sUwh/exec';
+        let db = { transactions: [], investments: [], recurring: [] };
+        let catChart, invChart;
+
+        // Inicialização
+        window.onload = () => {
+            loadLocal();
+            renderAll();
+            sync();
+            document.getElementById('tx_datahora').value = new Date().toISOString().slice(0, 16);
+        };
+
+        function switchTab(id) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            event.target.classList.add('active');
+            if(id === 'dash') updateCharts();
+        }
+
+        // --- CORE: Salvar Dados ---
+        async function handleForm(e, collection) {
+            e.preventDefault();
+            const form = e.target;
+            const prefix = form.id.replace('Form', '');
+            
+            const item = {
+                id: document.getElementById(`${prefix}_id`).value || Date.now().toString(),
+            };
+
+            // Mapeia todos os inputs do form para o objeto
+            Array.from(form.elements).forEach(el => {
+                if(el.id && el.id.includes('_')) {
+                    const key = el.id.split('_')[1];
+                    item[key] = el.type === 'number' ? parseFloat(el.value) : el.value;
+                }
+            });
+
+            // Lógica de valor negativo para compras
+            if(collection === 'transactions' && item.tipo === 'Compra') item.valor = -Math.abs(item.valor);
+
+            const existingIdx = db[collection].findIndex(i => i.id == item.id);
+            if(existingIdx > -1) db[collection][existingIdx] = item;
+            else db[collection].push(item);
+
+            saveLocal();
+            renderAll();
+            form.reset();
+            document.getElementById(`${prefix}_id`).value = '';
+
+            try {
+                const action = existingIdx > -1 ? `edit${collection.slice(0,-1).charAt(0).toUpperCase() + collection.slice(1,-1)}` : `create${collection.slice(0,-1).charAt(0).toUpperCase() + collection.slice(1,-1)}`;
+                await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action, payload: item }) });
+                document.getElementById('syncStatus').innerText = '☁️ Sincronizado';
+            } catch (e) {
+                document.getElementById('syncStatus').innerText = '⚠️ Local apenas';
+            }
+        }
+
+        // --- RENDERIZAÇÃO ---
+        function renderAll() {
+            renderTransactions();
+            renderInvestments();
+            renderRecurring();
+            updateStats();
+            updateCharts();
+        }
+
+        function renderTransactions() {
+            const body = document.getElementById('txBody');
+            body.innerHTML = db.transactions.map(t => `
+                <tr>
+                    <td><small>${new Date(t.datahora).toLocaleDateString()}</small></td>
+                    <td><span class="pill">${t.categoria || 'Geral'}</span></td>
+                    <td>${t.descricao}</td>
+                    <td style="color:${t.valor > 0 ? 'green':'red'}"><b>${formatBRL(t.valor)}</b></td>
+                    <td><button onclick="deleteItem('transactions', '${t.id}')">🗑️</button></td>
+                </tr>
+            `).join('');
+        }
+
+        function renderInvestments() {
+            const container = document.getElementById('invList');
+            container.innerHTML = db.investments.map(i => `
+                <div class="card" style="display:flex; justify-content:space-between; align-items:center">
+                    <div><b>${i.nome}</b> <span class="pill">${i.tipo}</span><br><small>${i.quantidade} un x ${formatBRL(i.precomedio)}</small></div>
+                    <div><b>${formatBRL(i.quantidade * i.precomedio)}</b></div>
+                    <button onclick="deleteItem('investments', '${i.id}')" class="danger">🗑️</button>
+                </div>
+            `).join('');
+        }
+
+        function renderRecurring() {
+            const container = document.getElementById('recList');
+            container.innerHTML = db.recurring.map(r => `
+                <div class="card" style="border-left: 4px solid #10b981">
+                    <div style="display:flex; justify-content:space-between">
+                        <b>${r.nome}</b>
+                        <span style="color:green"><b>${formatBRL(r.valor)}</b></span>
+                    </div>
+                    <small>Frequência: ${r.frequencia} | Próximo: ${r.proximopagamento}</small>
+                    <div style="text-align:right; margin-top:10px">
+                        <button onclick="deleteItem('recurring', '${r.id}')" class="danger" style="padding:4px 8px">Excluir</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // --- GRÁFICOS ---
+
+        function updateCharts() {
+            const txCats = {};
+            db.transactions.filter(t => t.valor < 0).forEach(t => {
+                const cat = t.categoria || 'Outros';
+                txCats[cat] = (txCats[cat] || 0) + Math.abs(t.valor);
+            });
+
+            if(catChart) catChart.destroy();
+            catChart = new Chart(document.getElementById('catChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(txCats),
+                    datasets: [{ data: Object.values(txCats), backgroundColor: ['#ef4444', '#f59e0b', '#2563eb', '#10b981', '#8b5cf6'] }]
+                }
+            });
+        }
+
+        // --- AUXILIARES ---
+        function formatBRL(v) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v); }
+        
+        function saveLocal() { localStorage.setItem('fin_db', JSON.stringify(db)); }
+        function loadLocal() { const saved = localStorage.getItem('fin_db'); if(saved) db = JSON.parse(saved); }
+
+        function updateStats() {
+            const inc = db.transactions.filter(t => t.valor > 0).reduce((s, t) => s + t.valor, 0);
+            const out = db.transactions.filter(t => t.valor < 0).reduce((s, t) => s + t.valor, 0);
+            const inv = db.investments.reduce((s, i) => s + (i.quantidade * i.precomedio), 0);
+            document.getElementById('d-in').innerText = formatBRL(inc);
+            document.getElementById('d-out').innerText = formatBRL(Math.abs(out));
+            document.getElementById('d-inv').innerText = formatBRL(inv);
+        }
+
+        async function sync() {
+            try {
+                const resp = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'listAll' }) });
+                const data = await resp.json();
+                if(data.success) {
+                    db = data;
+                    saveLocal();
+                    renderAll();
+                }
+            } catch(e) {}
+        }
+
+        function filterTable(tableId, colIdx) {
+            const input = event.target.value.toLowerCase();
+            const rows = document.getElementById(tableId).getElementsByTagName('tr');
+            for(let i = 1; i < rows.length; i++) {
+                const text = rows[i].getElementsByTagName('td')[colIdx].innerText.toLowerCase();
+                rows[i].style.display = text.includes(input) ? '' : 'none';
+            }
+        }
+
+        async function deleteItem(collection, id) {
+            if(!confirm('Excluir?')) return;
+            db[collection] = db[collection].filter(i => i.id != id);
+            saveLocal();
+            renderAll();
+            const action = `delete${collection.slice(0,-1).charAt(0).toUpperCase() + collection.slice(1,-1)}`;
+            await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action, payload: {id} }) });
+        }
+    </script>
+</body>
+</html>
